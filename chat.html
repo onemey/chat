@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Чат</title>
+    <style>
+        #messages { list-style-type: none; margin: 0; padding: 0; }
+        #messages li { padding: 8px; border-bottom: 1px solid #ddd; }
+        #typing { color: gray; }
+    </style>
+</head>
+<body>
+    <h2>Чат</h2>
+    <ul id="messages"></ul>
+    <p id="typing"></p>
+    <input id="input" autocomplete="off" placeholder="Введите сообщение..."/>
+    <button onclick="sendMessage()">Отправить</button>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script type="text/javascript">
+        var socket = io();
+        var input = document.getElementById("input");
+        var messages = document.getElementById("messages");
+        var typing = document.getElementById("typing");
+
+        input.addEventListener('keypress', () => {
+            socket.emit('typing', {msg: ''});
+        });
+
+        function sendMessage() {
+            socket.emit('message', {msg: input.value});
+            input.value = '';
+        }
+
+        socket.on('message', function(data) {
+            var item = document.createElement('li');
+            item.textContent = data.msg;
+            messages.appendChild(item);
+            typing.textContent = '';
+        });
+
+        socket.on('status', function(data) {
+            var item = document.createElement('li');
+            item.style.color = 'gray';
+            item.textContent = data.msg;
+            messages.appendChild(item);
+        });
+
+        socket.on('typing', function(data) {
+            typing.textContent = data.msg;
+        });
+    </script>
+</body>
+</html>
